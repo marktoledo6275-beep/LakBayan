@@ -1,0 +1,17 @@
+* text=auto
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.psd binary
+*.ttf binary
+*.otf binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.unity text
+*.meta text
+*.asset text
+*.prefab text
+*.mat text
+*.anim text
+*.controller text

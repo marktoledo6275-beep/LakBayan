@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d2b787fd6974788a75525ddb4509b69, type: 3}
+  m_Name: MeetTheElderQuest
+  m_EditorClassIdentifier: Assembly-CSharp::QuestData
+  questId: meet_the_elder
+  title: Visit the River Shrine
+  description: Learn how places of worship and gathering were important in many pre-colonial
+    communities.
+  historicalFact: Barangays often centered daily life around leadership, cooperation,
+    and shared traditions.
+  objectives:
+  - objectiveId: visit_shrine
+    description: Walk to the shrine near the river.
+    objectiveType: 1
+    targetId: river_shrine
+    requiredAmount: 1
+  rewards:
+  - rewardItemId: barangay_token
+    rewardAmount: 1
+    scoreBonus: 25
+    unlockContentId: main_world_intro_complete
