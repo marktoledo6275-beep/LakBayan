@@ -34,6 +34,10 @@ sysinfo.txt
 *.stacktrace
 crashlytics-build.properties
 
+# Optional package examples not used by the game
+Assets/TextMesh Pro/Examples & Extras/
+Assets/TextMesh Pro/Examples & Extras.meta
+
 # Keep all actual project content
 !Assets/
 !Packages/

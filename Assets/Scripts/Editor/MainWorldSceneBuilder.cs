@@ -1,138 +1,222 @@
 #if UNITY_EDITOR
 using System.IO;
+using TMPro;
 using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public static class MainWorldSceneBuilder
 {
     private const string ScenePath = "Assets/Scenes/MainWorld.unity";
-    private const string SquareTexturePath = "Assets/Art/Generated/WhiteSquare.png";
-    private const string InputActionsAssetPath = "Assets/InputSystem_Actions.inputactions";
-    private const string BackdropSpritePath = "Assets/Resources/World/Environment/VillageBackdrop.png";
-    private const string PlayerSpritePath = "Assets/Resources/World/Characters/PlayerGuide.png";
-    private const string ElderSpritePath = "Assets/Resources/World/Characters/VillageElder.png";
-    private const string CharacterShadowSpritePath = "Assets/Resources/World/Characters/CharacterShadow.png";
-    private const string ShrineSpritePath = "Assets/Resources/World/Environment/RiverShrine.png";
-    private const string JoystickBaseSpritePath = "Assets/Resources/UI/Gameplay/JoystickBase.png";
-    private const string JoystickKnobSpritePath = "Assets/Resources/UI/Gameplay/JoystickKnob.png";
-    private const string ActionButtonSpritePath = "Assets/Resources/UI/Gameplay/ActionButton.png";
-    private const string WoodPanelWideSpritePath = "Assets/Resources/UI/Gameplay/WoodPanelWide.png";
-    private const string WoodPanelSmallSpritePath = "Assets/Resources/UI/Gameplay/WoodPanelSmall.png";
-    private const string WoodPanelDarkSpritePath = "Assets/Resources/UI/Gameplay/WoodPanelDark.png";
-    private const string WoodButtonSpritePath = "Assets/Resources/UI/Gameplay/WoodButton.png";
-    private const string ElderDefaultDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_Default.asset";
-    private const string ElderOfferDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_Offer.asset";
-    private const string ElderInProgressDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_InProgress.asset";
-    private const string ElderReadyDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_Ready.asset";
-    private const string ElderCompletedDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_Completed.asset";
-    private const string ElderQuestPath = "Assets/ScriptableObjects/Quests/MeetTheElderQuest.asset";
+    private const string WhiteSpritePath = "Assets/Art/Generated/WhiteSquare.png";
+    private const string QuestPath = "Assets/ScriptableObjects/Quests/RiverShrineQuest.asset";
+    private const string DefaultDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_Default.asset";
+    private const string OfferDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_Offer.asset";
+    private const string ProgressDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_InProgress.asset";
+    private const string ReadyDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_Ready.asset";
+    private const string CompletedDialoguePath = "Assets/ScriptableObjects/Dialogue/Elder_Completed.asset";
+    private const int MapWidth = 24;
+    private const int MapHeight = 18;
 
     [MenuItem("LAKBAYAN/Build Starter Main World Scene")]
     public static void BuildStarterMainWorldScene()
     {
-        EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+        {
+            return;
+        }
 
-        Sprite squareSprite = EnsureSquareSprite();
-        Sprite backdropSprite = LoadSpriteAsset(BackdropSpritePath, squareSprite);
-        Sprite playerSprite = LoadSpriteAsset(PlayerSpritePath, squareSprite);
-        Sprite elderSprite = LoadSpriteAsset(ElderSpritePath, squareSprite);
-        Sprite characterShadowSprite = LoadSpriteAsset(CharacterShadowSpritePath, squareSprite);
-        Sprite shrineSprite = LoadSpriteAsset(ShrineSpritePath, squareSprite);
-        Sprite joystickBaseSprite = LoadSpriteAsset(JoystickBaseSpritePath, squareSprite);
-        Sprite joystickKnobSprite = LoadSpriteAsset(JoystickKnobSpritePath, squareSprite);
-        Sprite actionButtonSprite = LoadSpriteAsset(ActionButtonSpritePath, squareSprite);
-        Sprite woodPanelWideSprite = LoadSpriteAsset(WoodPanelWideSpritePath, squareSprite);
-        Sprite woodPanelSmallSprite = LoadSpriteAsset(WoodPanelSmallSpritePath, squareSprite);
-        Sprite woodPanelDarkSprite = LoadSpriteAsset(WoodPanelDarkSpritePath, squareSprite);
-        Sprite woodButtonSprite = LoadSpriteAsset(WoodButtonSpritePath, squareSprite);
-        DialogueData defaultDialogue = CreateDialogueAsset(
-            ElderDefaultDialoguePath,
-            "Village Elder",
-            new[]
-            {
-                ("Welcome, young Lakbayan. Our barangay thrives because everyone helps each other.", true),
-                ("If you are ready, I can guide you through your first lesson.", false)
-            });
+        EnsureFolders();
+        Sprite whiteSprite = EnsureWhiteSprite();
 
-        DialogueData offerDialogue = CreateDialogueAsset(
-            ElderOfferDialoguePath,
-            "Village Elder",
-            new[]
-            {
-                ("Before long ago, each barangay had places of worship and gathering near rivers and forests.", true),
-                ("Walk to the shrine by the river, then return to me so I know you understand our village.", false)
-            });
+        DialogueData defaultDialogue = CreateDialogue(DefaultDialoguePath, "Village Elder",
+            ("Welcome to our barangay. We learn by exploring and listening to the stories of our people.", true),
+            ("Talk to me when you are ready for your first task.", false));
 
-        DialogueData inProgressDialogue = CreateDialogueAsset(
-            ElderInProgressDialoguePath,
-            "Village Elder",
-            new[]
-            {
-                ("The shrine stands near the riverbank. Observe it carefully, then come back.", false)
-            });
+        DialogueData offerDialogue = CreateDialogue(OfferDialoguePath, "Village Elder",
+            ("Cross the bridge and visit the river shrine to the east.", false),
+            ("Many pre-colonial communities settled near rivers because waterways supported fishing, farming, and trade.", true),
+            ("Return to me after you reach it.", false));
 
-        DialogueData readyDialogue = CreateDialogueAsset(
-            ElderReadyDialoguePath,
-            "Village Elder",
-            new[]
-            {
-                ("Well done. You found the shrine and learned an important part of barangay life.", false),
-                ("Our people honor community, nature, and leadership together.", true)
-            });
+        DialogueData progressDialogue = CreateDialogue(ProgressDialoguePath, "Village Elder",
+            ("Keep following the path across the bridge. The shrine is waiting near the riverbank.", false));
 
-        DialogueData completedDialogue = CreateDialogueAsset(
-            ElderCompletedDialoguePath,
-            "Village Elder",
-            new[]
-            {
-                ("Continue exploring. More stories and games await in LAKBAYAN.", false)
-            });
+        DialogueData readyDialogue = CreateDialogue(ReadyDialoguePath, "Village Elder",
+            ("Excellent. You found the shrine and finished your first lesson.", false),
+            ("Rivers connected barangays and helped people travel and exchange goods long before modern roads.", true));
 
-        QuestData elderQuest = CreateQuestAsset();
+        DialogueData completedDialogue = CreateDialogue(CompletedDialoguePath, "Village Elder",
+            ("You are ready for more villagers, more lessons, and traditional mini-games next.", false));
 
-        Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        QuestData quest = CreateQuest();
+
+        var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         scene.name = "MainWorld";
 
-        Camera worldCamera = CreateCamera();
-        GameObject systems = CreateSystemsRoot();
-        EventSystem eventSystem = CreateEventSystem();
-        GameObject worldRoot = new GameObject("World");
+        Camera camera = CreateCamera();
+        CreateSystems();
+        CreateEventSystem();
 
-        CreateBackdrop(backdropSprite, worldRoot.transform);
-        CreateForegroundDecorations(squareSprite, worldRoot.transform);
+        Transform world = new GameObject("World").transform;
+        Transform floor = new GameObject("Floor").transform;
+        Transform props = new GameObject("Props").transform;
+        Transform walls = new GameObject("Walls").transform;
+        floor.SetParent(world, false);
+        props.SetParent(world, false);
+        walls.SetParent(world, false);
 
-        PlayerController player = CreatePlayer(squareSprite, playerSprite, characterShadowSprite, worldRoot.transform);
-        NPCInteraction elder = CreateVillageElder(squareSprite, elderSprite, characterShadowSprite, worldRoot.transform, defaultDialogue, offerDialogue, inProgressDialogue, readyDialogue, completedDialogue, elderQuest);
-        CreateShrine(squareSprite, shrineSprite, worldRoot.transform);
+        BuildMap(floor, props, walls, whiteSprite);
+        PlayerController player = CreatePlayer(props, whiteSprite);
+        CreateElder(props, whiteSprite, defaultDialogue, offerDialogue, progressDialogue, readyDialogue, completedDialogue, quest);
+        CreateShrine(props, whiteSprite);
 
-        CameraFollow cameraFollow = worldCamera.gameObject.AddComponent<CameraFollow>();
-        cameraFollow.SetTarget(player.transform);
-
-        Canvas canvas = CreateCanvas();
-        CreateHUD(canvas.transform, woodPanelWideSprite, woodPanelSmallSprite, woodPanelDarkSprite);
-        CreateDialogueUI(canvas.transform, player, woodPanelDarkSprite, woodButtonSprite);
-        CreateMobileControls(canvas.transform, player, joystickBaseSprite, joystickKnobSprite, actionButtonSprite);
-
-        Selection.activeGameObject = player.gameObject;
+        camera.gameObject.AddComponent<CameraFollow>().SetTarget(player.transform);
+        BuildUI(player);
 
         EditorSceneManager.SaveScene(scene, ScenePath);
-        EnsureSceneInBuildSettings("Assets/Scenes/MainMenu.unity");
-        EnsureSceneInBuildSettings(ScenePath);
-
-        EditorUtility.SetDirty(systems);
-        EditorUtility.SetDirty(eventSystem.gameObject);
+        AddSceneToBuildSettings("Assets/Scenes/MainMenu.unity");
+        AddSceneToBuildSettings(ScenePath);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log($"Starter MainWorld scene created at {ScenePath}");
+        Debug.Log("Playable MainWorld scene created.");
+    }
+
+    private static void EnsureFolders()
+    {
+        EnsureFolder("Assets/Art");
+        EnsureFolder("Assets/Art/Generated");
+        EnsureFolder("Assets/ScriptableObjects");
+        EnsureFolder("Assets/ScriptableObjects/Dialogue");
+        EnsureFolder("Assets/ScriptableObjects/Quests");
+    }
+
+    private static void EnsureFolder(string path)
+    {
+        string[] parts = path.Split('/');
+        string current = parts[0];
+
+        for (int i = 1; i < parts.Length; i++)
+        {
+            string next = current + "/" + parts[i];
+
+            if (!AssetDatabase.IsValidFolder(next))
+            {
+                AssetDatabase.CreateFolder(current, parts[i]);
+            }
+
+            current = next;
+        }
+    }
+
+    private static Sprite EnsureWhiteSprite()
+    {
+        Sprite existing = AssetDatabase.LoadAssetAtPath<Sprite>(WhiteSpritePath);
+
+        if (existing != null)
+        {
+            return existing;
+        }
+
+        string absolutePath = Path.Combine(Directory.GetCurrentDirectory(), WhiteSpritePath.Replace('/', Path.DirectorySeparatorChar));
+        Texture2D texture = new Texture2D(16, 16, TextureFormat.RGBA32, false);
+        Color32[] pixels = new Color32[16 * 16];
+
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            pixels[i] = new Color32(255, 255, 255, 255);
+        }
+
+        texture.SetPixels32(pixels);
+        texture.filterMode = FilterMode.Point;
+        texture.Apply();
+        File.WriteAllBytes(absolutePath, texture.EncodeToPNG());
+        Object.DestroyImmediate(texture);
+
+        AssetDatabase.ImportAsset(WhiteSpritePath, ImportAssetOptions.ForceUpdate);
+        TextureImporter importer = AssetImporter.GetAtPath(WhiteSpritePath) as TextureImporter;
+
+        if (importer != null)
+        {
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            importer.filterMode = FilterMode.Point;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.mipmapEnabled = false;
+            importer.alphaIsTransparency = true;
+            importer.SaveAndReimport();
+        }
+
+        return AssetDatabase.LoadAssetAtPath<Sprite>(WhiteSpritePath);
+    }
+
+    private static DialogueData CreateDialogue(string path, string speaker, params (string text, bool fact)[] lines)
+    {
+        DialogueData asset = AssetDatabase.LoadAssetAtPath<DialogueData>(path);
+
+        if (asset == null)
+        {
+            asset = ScriptableObject.CreateInstance<DialogueData>();
+            AssetDatabase.CreateAsset(asset, path);
+        }
+
+        SerializedObject serialized = new SerializedObject(asset);
+        serialized.FindProperty("speakerName").stringValue = speaker;
+        SerializedProperty lineArray = serialized.FindProperty("lines");
+        lineArray.arraySize = lines.Length;
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            SerializedProperty line = lineArray.GetArrayElementAtIndex(i);
+            line.FindPropertyRelative("text").stringValue = lines[i].text;
+            line.FindPropertyRelative("showAsHistoricalFact").boolValue = lines[i].fact;
+        }
+
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(asset);
+        return asset;
+    }
+
+    private static QuestData CreateQuest()
+    {
+        QuestData asset = AssetDatabase.LoadAssetAtPath<QuestData>(QuestPath);
+
+        if (asset == null)
+        {
+            asset = ScriptableObject.CreateInstance<QuestData>();
+            AssetDatabase.CreateAsset(asset, QuestPath);
+        }
+
+        SerializedObject serialized = new SerializedObject(asset);
+        serialized.FindProperty("questId").stringValue = "quest_river_shrine";
+        serialized.FindProperty("title").stringValue = "Visit the River Shrine";
+        serialized.FindProperty("description").stringValue = "Walk across the bridge, visit the shrine, and return to the Village Elder.";
+        serialized.FindProperty("historicalFact").stringValue = "Rivers were important in many pre-colonial communities because they helped with travel, trade, food, and daily life.";
+
+        SerializedProperty objectives = serialized.FindProperty("objectives");
+        objectives.arraySize = 1;
+        SerializedProperty objective = objectives.GetArrayElementAtIndex(0);
+        objective.FindPropertyRelative("objectiveId").stringValue = "reach_river_shrine";
+        objective.FindPropertyRelative("description").stringValue = "Reach the shrine on the far side of the bridge.";
+        objective.FindPropertyRelative("objectiveType").enumValueIndex = (int)QuestObjectiveType.ReachLocation;
+        objective.FindPropertyRelative("targetId").stringValue = "river_shrine";
+        objective.FindPropertyRelative("requiredAmount").intValue = 1;
+
+        SerializedProperty rewards = serialized.FindProperty("rewards");
+        rewards.arraySize = 1;
+        SerializedProperty reward = rewards.GetArrayElementAtIndex(0);
+        reward.FindPropertyRelative("rewardItemId").stringValue = "shell_token";
+        reward.FindPropertyRelative("rewardAmount").intValue = 1;
+        reward.FindPropertyRelative("scoreBonus").intValue = 20;
+        reward.FindPropertyRelative("unlockContentId").stringValue = "river_shrine_complete";
+
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(asset);
+        return asset;
     }
 
     private static Camera CreateCamera()
@@ -140,671 +224,378 @@ public static class MainWorldSceneBuilder
         GameObject cameraObject = new GameObject("Main Camera");
         Camera camera = cameraObject.AddComponent<Camera>();
         camera.orthographic = true;
-        camera.orthographicSize = 5.2f;
+        camera.orthographicSize = 5.6f;
         camera.clearFlags = CameraClearFlags.SolidColor;
-        camera.backgroundColor = new Color(0.53f, 0.79f, 0.93f);
-        camera.tag = "MainCamera";
-        cameraObject.transform.position = new Vector3(0f, -0.35f, -10f);
+        camera.backgroundColor = new Color(0.45f, 0.72f, 0.95f);
+        cameraObject.tag = "MainCamera";
+        cameraObject.transform.position = new Vector3(0f, 0f, -10f);
         cameraObject.AddComponent<AudioListener>();
         return camera;
     }
 
-    private static GameObject CreateSystemsRoot()
+    private static void CreateSystems()
     {
-        GameObject systems = new GameObject("WorldSystems");
+        GameObject systems = new GameObject("Systems");
         systems.AddComponent<GameManager>();
         systems.AddComponent<SceneController>();
         systems.AddComponent<QuestSystem>();
-        return systems;
     }
 
-    private static EventSystem CreateEventSystem()
+    private static void CreateEventSystem()
     {
-        GameObject eventSystemObject = new GameObject("EventSystem");
-        EventSystem eventSystem = eventSystemObject.AddComponent<EventSystem>();
-        InputSystemUIInputModule inputModule = eventSystemObject.AddComponent<InputSystemUIInputModule>();
-        InputActionAsset inputActions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsAssetPath);
-
-        if (inputActions != null)
-        {
-            inputModule.actionsAsset = inputActions;
-        }
-        else
-        {
-            Debug.LogWarning($"MainWorldSceneBuilder could not find UI input actions at '{InputActionsAssetPath}'. UI buttons may not receive input.");
-        }
-
-        return eventSystem;
+        GameObject eventSystem = new GameObject("EventSystem");
+        eventSystem.AddComponent<EventSystem>();
+        eventSystem.AddComponent<InputSystemUIInputModule>().AssignDefaultActions();
     }
 
-    private static Canvas CreateCanvas()
+    private static void BuildMap(Transform floor, Transform props, Transform walls, Sprite sprite)
     {
-        GameObject canvasObject = new GameObject("GameplayCanvas");
-        Canvas canvas = canvasObject.AddComponent<Canvas>();
+        for (int y = 0; y < MapHeight; y++)
+        {
+            for (int x = 0; x < MapWidth; x++)
+            {
+                Color color = ((x + y) % 4 == 0) ? new Color(0.36f, 0.68f, 0.28f) : new Color(0.32f, 0.63f, 0.24f);
+                CreateTile($"Grass_{x}_{y}", floor, sprite, GridToWorld(x, y), color, 0, new Vector3(1.02f, 1.02f, 1f));
+            }
+        }
+
+        for (int x = 0; x < MapWidth; x++)
+        {
+            for (int y = 7; y <= 9; y++)
+            {
+                CreateTile($"River_{x}_{y}", floor, sprite, GridToWorld(x, y), new Color(0.18f, 0.52f, 0.88f), 1, new Vector3(1.02f, 1.02f, 1f));
+            }
+        }
+
+        for (int x = 10; x <= 12; x++)
+        {
+            CreateTile($"Bridge_{x}", floor, sprite, GridToWorld(x, 8), new Color(0.56f, 0.34f, 0.12f), 2, new Vector3(1.02f, 1.02f, 1f));
+        }
+
+        for (int y = 0; y <= 12; y++)
+        {
+            if (y != 8)
+            {
+                CreateTile($"PathVertical_{y}", floor, sprite, GridToWorld(11, y), new Color(0.83f, 0.71f, 0.42f), 2, new Vector3(0.76f, 1.02f, 1f));
+            }
+        }
+
+        for (int x = 8; x <= 18; x++)
+        {
+            CreateTile($"PathHorizontal_{x}", floor, sprite, GridToWorld(x, 12), new Color(0.83f, 0.71f, 0.42f), 2, new Vector3(1.02f, 0.76f, 1f));
+        }
+
+        for (int x = 8; x <= 11; x++)
+        {
+            CreateTile($"PathElder_{x}", floor, sprite, GridToWorld(x, 4), new Color(0.83f, 0.71f, 0.42f), 2, new Vector3(1.02f, 0.76f, 1f));
+        }
+
+        CreateTree(props, walls, sprite, 3, 13);
+        CreateTree(props, walls, sprite, 6, 13);
+        CreateTree(props, walls, sprite, 19, 13);
+        CreateTree(props, walls, sprite, 20, 3);
+        CreateRock(props, sprite, 8, 13);
+        CreateRock(props, sprite, 16, 3);
+
+        CreateBoundary(walls, "Bottom", new Vector3(0f, -9.8f, 0f), new Vector2(30f, 1f));
+        CreateBoundary(walls, "Top", new Vector3(0f, 9.8f, 0f), new Vector2(30f, 1f));
+        CreateBoundary(walls, "Left", new Vector3(-12.8f, 0f, 0f), new Vector2(1f, 22f));
+        CreateBoundary(walls, "Right", new Vector3(12.8f, 0f, 0f), new Vector2(1f, 22f));
+
+        for (int x = 0; x < MapWidth; x++)
+        {
+            if (x < 10 || x > 12)
+            {
+                CreateBoundary(walls, $"RiverBlock_{x}", GridToWorld(x, 8), new Vector2(1f, 3f));
+            }
+        }
+    }
+
+    private static PlayerController CreatePlayer(Transform parent, Sprite sprite)
+    {
+        GameObject player = new GameObject("Player");
+        player.transform.SetParent(parent, false);
+        player.transform.position = GridToWorld(11, 1);
+
+        CreateTile("Shadow", player.transform, sprite, new Vector3(0f, -0.28f, 0f), new Color(0f, 0f, 0f, 0.22f), 19, new Vector3(0.58f, 0.15f, 1f));
+        SpriteRenderer renderer = CreateTile("Visual", player.transform, sprite, Vector3.zero, new Color(0.84f, 0.23f, 0.20f), 20, new Vector3(0.72f, 0.88f, 1f));
+
+        Rigidbody2D body = player.AddComponent<Rigidbody2D>();
+        body.gravityScale = 0f;
+        body.freezeRotation = true;
+        body.interpolation = RigidbodyInterpolation2D.Interpolate;
+
+        CapsuleCollider2D collider = player.AddComponent<CapsuleCollider2D>();
+        collider.size = new Vector2(0.55f, 0.38f);
+        collider.offset = new Vector2(0f, -0.14f);
+
+        Transform interactionOrigin = new GameObject("InteractionOrigin").transform;
+        interactionOrigin.SetParent(player.transform, false);
+        interactionOrigin.localPosition = new Vector3(0f, 0.34f, 0f);
+
+        PlayerController controller = player.AddComponent<PlayerController>();
+        SetObject(controller, "spriteRenderer", renderer);
+        SetObject(controller, "interactionOrigin", interactionOrigin);
+        SetFloat(controller, "moveSpeed", 4.1f);
+        return controller;
+    }
+
+    private static void CreateElder(Transform parent, Sprite sprite, DialogueData d0, DialogueData d1, DialogueData d2, DialogueData d3, DialogueData d4, QuestData quest)
+    {
+        GameObject elder = new GameObject("Village Elder");
+        elder.transform.SetParent(parent, false);
+        elder.transform.position = GridToWorld(8, 4);
+
+        CreateTile("Shadow", elder.transform, sprite, new Vector3(0f, -0.27f, 0f), new Color(0f, 0f, 0f, 0.22f), 17, new Vector3(0.58f, 0.14f, 1f));
+        CreateTile("Visual", elder.transform, sprite, Vector3.zero, new Color(0.95f, 0.84f, 0.48f), 18, new Vector3(0.72f, 0.88f, 1f));
+
+        BoxCollider2D collider = elder.AddComponent<BoxCollider2D>();
+        collider.size = new Vector2(0.58f, 0.38f);
+        collider.offset = new Vector2(0f, -0.12f);
+
+        NPCInteraction npc = elder.AddComponent<NPCInteraction>();
+        SetString(npc, "npcId", "elder");
+        SetString(npc, "displayName", "Village Elder");
+        SetObject(npc, "defaultDialogue", d0);
+        SetObject(npc, "questOfferDialogue", d1);
+        SetObject(npc, "questInProgressDialogue", d2);
+        SetObject(npc, "questReadyToTurnInDialogue", d3);
+        SetObject(npc, "questCompletedDialogue", d4);
+        SetObject(npc, "questToGive", quest);
+    }
+
+    private static void CreateShrine(Transform parent, Sprite sprite)
+    {
+        GameObject shrine = new GameObject("River Shrine");
+        shrine.transform.SetParent(parent, false);
+        shrine.transform.position = GridToWorld(18, 12);
+
+        CreateTile("ShrineVisual", shrine.transform, sprite, Vector3.zero, new Color(0.96f, 0.76f, 0.30f), 14, new Vector3(0.88f, 0.88f, 1f));
+        BoxCollider2D collider = shrine.AddComponent<BoxCollider2D>();
+        collider.isTrigger = true;
+        collider.size = new Vector2(0.70f, 0.70f);
+
+        QuestObjectiveTrigger trigger = shrine.AddComponent<QuestObjectiveTrigger>();
+        SetString(trigger, "targetId", "river_shrine");
+        SetEnum(trigger, "objectiveType", QuestObjectiveType.ReachLocation);
+        SetInt(trigger, "progressAmount", 1);
+    }
+
+    private static void BuildUI(PlayerController player)
+    {
+        GameObject canvasObject = new GameObject("GameplayCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        Canvas canvas = canvasObject.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
-        CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
+        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
         scaler.matchWidthOrHeight = 0.5f;
 
-        canvasObject.AddComponent<GraphicRaycaster>();
-        return canvas;
-    }
+        GameObject questPanel = CreatePanel(canvas.transform, "QuestPanel", new Color(0.16f, 0.10f, 0.05f, 0.82f), 0.02f, 0.82f, 0.48f, 0.97f);
+        TextMeshProUGUI questText = CreateText(questPanel.transform, "QuestText", "Talk to the Village Elder.", 30, TextAlignmentOptions.TopLeft, 0.05f, 0.12f, 0.95f, 0.90f);
 
-    private static void CreateBackdrop(Sprite backdropSprite, Transform parent)
-    {
-        GameObject backdrop = new GameObject("VillageBackdrop");
-        backdrop.transform.SetParent(parent, false);
-        backdrop.transform.position = new Vector3(0f, 0.05f, 0f);
-        backdrop.transform.localScale = new Vector3(20.2f, 13.55f, 1f);
+        GameObject scorePanel = CreatePanel(canvas.transform, "ScorePanel", new Color(0.16f, 0.10f, 0.05f, 0.82f), 0.82f, 0.88f, 0.97f, 0.97f);
+        TextMeshProUGUI scoreText = CreateText(scorePanel.transform, "ScoreText", "0", 34, TextAlignmentOptions.Center, 0f, 0f, 1f, 1f);
 
-        SpriteRenderer renderer = backdrop.AddComponent<SpriteRenderer>();
-        renderer.sprite = backdropSprite;
-        renderer.sortingOrder = -50;
-    }
+        GameObject instructionPanel = CreatePanel(canvas.transform, "InstructionPanel", new Color(0.16f, 0.10f, 0.05f, 0.78f), 0.02f, 0.02f, 0.55f, 0.10f);
+        TextMeshProUGUI instructionText = CreateText(instructionPanel.transform, "InstructionText", "Use WASD or the joystick. Tap ACTION to talk.", 24, TextAlignmentOptions.Left, 0.04f, 0.10f, 0.96f, 0.90f);
 
-    private static void CreateForegroundDecorations(Sprite squareSprite, Transform parent)
-    {
-        CreateWorldSprite("LeftRockCluster", squareSprite, new Color(0.49f, 0.46f, 0.37f), new Vector3(-7.8f, -3.65f, 0f), new Vector3(1.55f, 0.92f, 1f), parent, -3);
-        CreateWorldSprite("LeftRockHighlight", squareSprite, new Color(0.72f, 0.67f, 0.56f), new Vector3(-7.95f, -3.58f, 0f), new Vector3(0.72f, 0.36f, 1f), parent, -2);
-        CreateWorldSprite("RightRockCluster", squareSprite, new Color(0.49f, 0.46f, 0.37f), new Vector3(7.85f, -3.72f, 0f), new Vector3(1.6f, 0.92f, 1f), parent, -3);
-        CreateWorldSprite("RightRockHighlight", squareSprite, new Color(0.72f, 0.67f, 0.56f), new Vector3(8.12f, -3.58f, 0f), new Vector3(0.72f, 0.36f, 1f), parent, -2);
+        HUDController hud = questPanel.AddComponent<HUDController>();
+        SetObject(hud, "currentQuestText", questText);
+        SetObject(hud, "scoreText", scoreText);
+        SetObject(hud, "instructionText", instructionText);
 
-        CreateWorldSprite("GrassPatchLeft", squareSprite, new Color(0.41f, 0.63f, 0.27f), new Vector3(-3.85f, -2.85f, 0f), new Vector3(0.85f, 0.18f, 1f), parent, -1);
-        CreateWorldSprite("GrassPatchCenter", squareSprite, new Color(0.41f, 0.63f, 0.27f), new Vector3(0.45f, -1.78f, 0f), new Vector3(0.95f, 0.22f, 1f), parent, -1);
-        CreateWorldSprite("GrassPatchRight", squareSprite, new Color(0.41f, 0.63f, 0.27f), new Vector3(4.15f, -2.65f, 0f), new Vector3(0.9f, 0.18f, 1f), parent, -1);
-    }
+        GameObject dialoguePanel = CreatePanel(canvas.transform, "DialoguePanel", new Color(0.13f, 0.08f, 0.04f, 0.94f), 0.10f, 0.04f, 0.90f, 0.28f);
+        dialoguePanel.SetActive(false);
+        TextMeshProUGUI speakerText = CreateText(dialoguePanel.transform, "SpeakerText", "Village Elder", 30, TextAlignmentOptions.TopLeft, 0.04f, 0.70f, 0.55f, 0.92f);
+        TextMeshProUGUI factText = CreateText(dialoguePanel.transform, "FactText", "Historical Fact", 24, TextAlignmentOptions.TopRight, 0.56f, 0.70f, 0.96f, 0.92f);
+        factText.color = new Color(1f, 0.85f, 0.48f);
+        TextMeshProUGUI bodyText = CreateText(dialoguePanel.transform, "BodyText", string.Empty, 27, TextAlignmentOptions.TopLeft, 0.04f, 0.18f, 0.96f, 0.66f);
+        Button nextButton = CreateButton(dialoguePanel.transform, "NextButton", "NEXT", 0.74f, 0.04f, 0.95f, 0.16f);
 
-    private static PlayerController CreatePlayer(Sprite fallbackSprite, Sprite playerSprite, Sprite shadowSprite, Transform parent)
-    {
-        GameObject playerObject = new GameObject("Player");
-        playerObject.transform.SetParent(parent, false);
-        playerObject.transform.position = new Vector3(0f, -3.05f, 0f);
-
-        SpriteRenderer shadowRenderer = CreateCharacterShadow(playerObject.transform, shadowSprite, 11, new Vector3(0f, -0.58f, 0f), new Vector3(0.9f, 0.32f, 1f));
-        SpriteRenderer spriteRenderer = CreateCharacterSprite(playerObject.transform, playerSprite, fallbackSprite, 20, new Vector3(0f, -0.54f, 0f), new Vector3(1.28f, 1.28f, 1f));
-
-        Rigidbody2D rigidbody2D = playerObject.AddComponent<Rigidbody2D>();
-        rigidbody2D.gravityScale = 0f;
-        rigidbody2D.freezeRotation = true;
-        rigidbody2D.interpolation = RigidbodyInterpolation2D.Interpolate;
-
-        CapsuleCollider2D collider2D = playerObject.AddComponent<CapsuleCollider2D>();
-        collider2D.size = new Vector2(0.72f, 0.56f);
-        collider2D.offset = new Vector2(0f, -0.6f);
-
-        Transform interactionOrigin = new GameObject("InteractionOrigin").transform;
-        interactionOrigin.SetParent(playerObject.transform, false);
-        interactionOrigin.localPosition = new Vector3(0f, -0.55f, 0f);
-
-        PlayerController controller = playerObject.AddComponent<PlayerController>();
-        AssignPrivateField(controller, "spriteRenderer", spriteRenderer);
-        AssignPrivateField(controller, "interactionOrigin", interactionOrigin);
-
-        shadowRenderer.color = new Color(1f, 1f, 1f, 0.74f);
-        return controller;
-    }
-
-    private static NPCInteraction CreateVillageElder(Sprite fallbackSprite, Sprite elderSprite, Sprite shadowSprite, Transform parent, DialogueData defaultDialogue, DialogueData offerDialogue, DialogueData inProgressDialogue, DialogueData readyDialogue, DialogueData completedDialogue, QuestData questData)
-    {
-        GameObject elderObject = new GameObject("Village Elder");
-        elderObject.transform.SetParent(parent, false);
-        elderObject.transform.position = new Vector3(-1.75f, -0.85f, 0f);
-
-        CreateCharacterShadow(elderObject.transform, shadowSprite, 10, new Vector3(0f, -0.54f, 0f), new Vector3(0.84f, 0.28f, 1f));
-        SpriteRenderer spriteRenderer = CreateCharacterSprite(elderObject.transform, elderSprite, fallbackSprite, 18, new Vector3(0f, -0.5f, 0f), new Vector3(1.18f, 1.18f, 1f));
-
-        BoxCollider2D collider2D = elderObject.AddComponent<BoxCollider2D>();
-        collider2D.size = new Vector2(0.7f, 0.52f);
-        collider2D.offset = new Vector2(0f, -0.58f);
-
-        NPCInteraction interaction = elderObject.AddComponent<NPCInteraction>();
-        AssignPrivateField(interaction, "npcId", "elder");
-        AssignPrivateField(interaction, "displayName", "Village Elder");
-        AssignPrivateField(interaction, "defaultDialogue", defaultDialogue);
-        AssignPrivateField(interaction, "questOfferDialogue", offerDialogue);
-        AssignPrivateField(interaction, "questInProgressDialogue", inProgressDialogue);
-        AssignPrivateField(interaction, "questReadyToTurnInDialogue", readyDialogue);
-        AssignPrivateField(interaction, "questCompletedDialogue", completedDialogue);
-        AssignPrivateField(interaction, "questToGive", questData);
-        return interaction;
-    }
-
-    private static void CreateShrine(Sprite fallbackSprite, Sprite shrineSprite, Transform parent)
-    {
-        GameObject shrine = new GameObject("River Shrine");
-        shrine.transform.SetParent(parent, false);
-        shrine.transform.position = new Vector3(5.15f, 0.52f, 0f);
-
-        SpriteRenderer spriteRenderer = shrine.AddComponent<SpriteRenderer>();
-        spriteRenderer.sprite = shrineSprite != null ? shrineSprite : fallbackSprite;
-        spriteRenderer.sortingOrder = 8;
-
-        if (shrineSprite == null || shrineSprite == fallbackSprite)
-        {
-            spriteRenderer.color = new Color(0.84f, 0.72f, 0.30f);
-            shrine.transform.localScale = new Vector3(1.15f, 1.15f, 1f);
-        }
-        else
-        {
-            shrine.transform.localScale = new Vector3(1.15f, 1.15f, 1f);
-        }
-
-        BoxCollider2D collider2D = shrine.AddComponent<BoxCollider2D>();
-        collider2D.isTrigger = true;
-        collider2D.size = new Vector2(0.82f, 0.9f);
-        collider2D.offset = new Vector2(0f, -0.12f);
-
-        QuestObjectiveTrigger questTrigger = shrine.AddComponent<QuestObjectiveTrigger>();
-        AssignPrivateField(questTrigger, "targetId", "river_shrine");
-        AssignPrivateField(questTrigger, "objectiveType", QuestObjectiveType.ReachLocation);
-        AssignPrivateField(questTrigger, "progressAmount", 1);
-    }
-
-    private static void CreateHUD(Transform canvasTransform, Sprite widePanelSprite, Sprite smallPanelSprite, Sprite darkPanelSprite)
-    {
-        GameObject hudRoot = CreateUIObject("HUD", canvasTransform);
-        RectTransform hudRect = hudRoot.GetComponent<RectTransform>();
-        StretchToParent(hudRect);
-
-        GameObject questPanel = CreateStyledPanel("QuestPanel", hudRoot.transform, widePanelSprite, new Color(1f, 1f, 1f, 0.97f), new Color(0f, 0f, 0f, 0.22f));
-        SetAnchors(questPanel.GetComponent<RectTransform>(), new Vector2(0.025f, 0.84f), new Vector2(0.49f, 0.975f));
-
-        TextMeshProUGUI questLabel = CreateText(questPanel.transform, "QuestLabel", "CURRENT JOURNEY", 20, TextAnchor.UpperLeft, FontStyle.Bold, new Color(1f, 0.87f, 0.47f, 1f));
-        questLabel.color = new Color(0.98f, 0.82f, 0.45f, 1f);
-        SetAnchors(questLabel.rectTransform, new Vector2(0.04f, 0.62f), new Vector2(0.45f, 0.9f));
-
-        TextMeshProUGUI questText = CreateText(questPanel.transform, "CurrentQuestText", "Talk to the Village Elder to begin your first lesson.", 21, TextAnchor.UpperLeft, FontStyle.Bold, new Color(1f, 0.96f, 0.86f, 1f));
-        SetAnchors(questText.rectTransform, new Vector2(0.04f, 0.12f), new Vector2(0.96f, 0.7f));
-
-        GameObject scorePanel = CreateStyledPanel("ScorePanel", hudRoot.transform, smallPanelSprite, new Color(1f, 1f, 1f, 0.97f), new Color(0f, 0f, 0f, 0.22f));
-        SetAnchors(scorePanel.GetComponent<RectTransform>(), new Vector2(0.79f, 0.87f), new Vector2(0.975f, 0.975f));
-
-        TextMeshProUGUI scoreLabel = CreateText(scorePanel.transform, "ScoreLabel", "HISTORY SCORE", 17, TextAnchor.UpperCenter, FontStyle.Bold, new Color(1f, 0.87f, 0.47f, 1f));
-        scoreLabel.color = new Color(0.98f, 0.82f, 0.45f, 1f);
-        SetAnchors(scoreLabel.rectTransform, new Vector2(0.1f, 0.55f), new Vector2(0.9f, 0.88f));
-
-        TextMeshProUGUI scoreText = CreateText(scorePanel.transform, "ScoreText", "0", 32, TextAnchor.MiddleCenter, FontStyle.Bold, new Color(1f, 0.96f, 0.86f, 1f));
-        SetAnchors(scoreText.rectTransform, new Vector2(0.12f, 0.1f), new Vector2(0.88f, 0.62f));
-
-        GameObject instructionPanel = CreateStyledPanel("InstructionPanel", hudRoot.transform, darkPanelSprite, new Color(1f, 1f, 1f, 0.93f), new Color(0f, 0f, 0f, 0.18f));
-        SetAnchors(instructionPanel.GetComponent<RectTransform>(), new Vector2(0.025f, 0.02f), new Vector2(0.46f, 0.11f));
-
-        TextMeshProUGUI instructionText = CreateText(instructionPanel.transform, "InstructionText", "Move with the joystick or WASD. Stand near a villager or shrine, then tap ACT.", 18, TextAnchor.MiddleLeft, FontStyle.Normal, new Color(0.96f, 0.93f, 0.86f, 1f));
-        SetAnchors(instructionText.rectTransform, new Vector2(0.05f, 0.12f), new Vector2(0.95f, 0.88f));
-
-        HUDController hudController = hudRoot.AddComponent<HUDController>();
-        AssignPrivateField(hudController, "currentQuestText", questText);
-        AssignPrivateField(hudController, "scoreText", scoreText);
-        AssignPrivateField(hudController, "instructionText", instructionText);
-    }
-
-    private static void CreateDialogueUI(Transform canvasTransform, PlayerController player, Sprite panelSprite, Sprite buttonSprite)
-    {
-        GameObject panel = CreateStyledPanel("DialoguePanel", canvasTransform, panelSprite, new Color(1f, 1f, 1f, 0.96f), new Color(0f, 0f, 0f, 0.2f));
-        SetAnchors(panel.GetComponent<RectTransform>(), new Vector2(0.14f, 0.05f), new Vector2(0.86f, 0.28f));
-        panel.SetActive(false);
-
-        TextMeshProUGUI speakerText = CreateText(panel.transform, "SpeakerNameText", "Village Elder", 28, TextAnchor.UpperLeft, FontStyle.Bold, new Color(1f, 0.88f, 0.48f, 1f));
-        SetAnchors(speakerText.rectTransform, new Vector2(0.04f, 0.68f), new Vector2(0.46f, 0.92f));
-
-        TextMeshProUGUI historicalFactText = CreateText(panel.transform, "HistoricalFactLabelText", "Historical Fact", 20, TextAnchor.UpperRight, FontStyle.Bold, new Color(0.99f, 0.85f, 0.43f, 1f));
-        SetAnchors(historicalFactText.rectTransform, new Vector2(0.56f, 0.70f), new Vector2(0.96f, 0.92f));
-
-        TextMeshProUGUI dialogueText = CreateText(panel.transform, "DialogueText", string.Empty, 25, TextAnchor.UpperLeft, FontStyle.Normal, new Color(0.98f, 0.95f, 0.89f, 1f));
-        SetAnchors(dialogueText.rectTransform, new Vector2(0.04f, 0.20f), new Vector2(0.96f, 0.66f));
-
-        Button nextButton = CreateUIButton(panel.transform, "NextButton", "NEXT", buttonSprite);
-        SetAnchors(nextButton.GetComponent<RectTransform>(), new Vector2(0.69f, 0.03f), new Vector2(0.95f, 0.17f));
-
-        GameObject dialogueManagerObject = new GameObject("DialogueManager");
-        dialogueManagerObject.transform.SetParent(canvasTransform, false);
-        DialogueManager dialogueManager = dialogueManagerObject.AddComponent<DialogueManager>();
-        AssignPrivateField(dialogueManager, "dialoguePanel", panel);
-        AssignPrivateField(dialogueManager, "speakerNameText", speakerText);
-        AssignPrivateField(dialogueManager, "dialogueText", dialogueText);
-        AssignPrivateField(dialogueManager, "historicalFactLabelText", historicalFactText);
-
+        DialogueManager dialogueManager = new GameObject("DialogueManager").AddComponent<DialogueManager>();
+        dialogueManager.transform.SetParent(canvas.transform, false);
+        SetObject(dialogueManager, "dialoguePanel", dialoguePanel);
+        SetObject(dialogueManager, "speakerNameText", speakerText);
+        SetObject(dialogueManager, "dialogueText", bodyText);
+        SetObject(dialogueManager, "historicalFactLabelText", factText);
         UnityEventTools.AddPersistentListener(nextButton.onClick, dialogueManager.AdvanceDialogueFromButton);
-    }
 
-    private static void CreateMobileControls(Transform canvasTransform, PlayerController player, Sprite joystickBaseSprite, Sprite joystickKnobSprite, Sprite actionButtonSprite)
-    {
-        GameObject joystickRoot = CreateUIObject("VirtualJoystick", canvasTransform);
-        Image joystickBackground = joystickRoot.AddComponent<Image>();
-        joystickBackground.sprite = joystickBaseSprite;
-        joystickBackground.color = new Color(1f, 1f, 1f, 0.82f);
-        joystickBackground.preserveAspect = true;
+        GameObject joystick = CreatePanel(canvas.transform, "VirtualJoystick", new Color(0.08f, 0.12f, 0.16f, 0.34f), 0.05f, 0.05f, 0.18f, 0.28f);
+        GameObject handle = CreatePanel(joystick.transform, "Handle", new Color(0.98f, 0.92f, 0.67f, 0.82f), 0.30f, 0.30f, 0.70f, 0.70f);
+        VirtualJoystick virtualJoystick = joystick.AddComponent<VirtualJoystick>();
+        SetObject(virtualJoystick, "background", joystick.GetComponent<RectTransform>());
+        SetObject(virtualJoystick, "handle", handle.GetComponent<RectTransform>());
+        SetObject(virtualJoystick, "player", player);
 
-        RectTransform joystickRect = joystickRoot.GetComponent<RectTransform>();
-        SetAnchors(joystickRect, new Vector2(0.035f, 0.055f), new Vector2(0.17f, 0.285f));
-
-        GameObject handleObject = CreateUIObject("Handle", joystickRoot.transform);
-        Image handleImage = handleObject.AddComponent<Image>();
-        handleImage.sprite = joystickKnobSprite;
-        handleImage.color = new Color(1f, 1f, 1f, 0.92f);
-        handleImage.preserveAspect = true;
-
-        RectTransform handleRect = handleObject.GetComponent<RectTransform>();
-        handleRect.anchorMin = new Vector2(0.28f, 0.28f);
-        handleRect.anchorMax = new Vector2(0.72f, 0.72f);
-        handleRect.offsetMin = Vector2.zero;
-        handleRect.offsetMax = Vector2.zero;
-
-        VirtualJoystick joystick = joystickRoot.AddComponent<VirtualJoystick>();
-        AssignPrivateField(joystick, "background", joystickRect);
-        AssignPrivateField(joystick, "handle", handleRect);
-        AssignPrivateField(joystick, "player", player);
-        AssignPrivateField(joystick, "movementRange", 68f);
-
-        Button actionButton = CreateRoundActionButton(canvasTransform, "ActionButton", actionButtonSprite, "ACT");
-        SetAnchors(actionButton.GetComponent<RectTransform>(), new Vector2(0.81f, 0.06f), new Vector2(0.95f, 0.29f));
+        Button actionButton = CreateButton(canvas.transform, "ActionButton", "ACTION", 0.80f, 0.08f, 0.95f, 0.20f);
         UnityEventTools.AddPersistentListener(actionButton.onClick, player.TriggerInteractionButton);
     }
 
-    private static Button CreateUIButton(Transform parent, string name, string label, Sprite buttonSprite)
+    private static SpriteRenderer CreateTile(string name, Transform parent, Sprite sprite, Vector3 localPosition, Color color, int order, Vector3 scale)
     {
-        GameObject buttonObject = CreatePanel(name, parent, buttonSprite, new Color(1f, 1f, 1f, 0.98f));
-        Button button = buttonObject.AddComponent<Button>();
-
-        ColorBlock colors = button.colors;
-        colors.normalColor = Color.white;
-        colors.highlightedColor = new Color(1f, 0.95f, 0.82f, 1f);
-        colors.pressedColor = new Color(0.95f, 0.88f, 0.72f, 1f);
-        button.colors = colors;
-
-        TextMeshProUGUI labelText = CreateText(buttonObject.transform, "Label", label, 24, TextAnchor.MiddleCenter, FontStyle.Bold, new Color(0.33f, 0.17f, 0.06f, 1f));
-        StretchToParent(labelText.rectTransform);
-        return button;
+        GameObject tile = new GameObject(name);
+        tile.transform.SetParent(parent, false);
+        tile.transform.localPosition = localPosition;
+        tile.transform.localScale = scale;
+        SpriteRenderer renderer = tile.AddComponent<SpriteRenderer>();
+        renderer.sprite = sprite;
+        renderer.color = color;
+        renderer.sortingOrder = order;
+        return renderer;
     }
 
-    private static Button CreateRoundActionButton(Transform parent, string name, Sprite buttonSprite, string label)
+    private static void CreateTree(Transform props, Transform walls, Sprite sprite, int x, int y)
     {
-        GameObject buttonObject = CreateUIObject(name, parent);
-        Image image = buttonObject.AddComponent<Image>();
-        image.sprite = buttonSprite;
-        image.preserveAspect = true;
-        image.color = new Color(1f, 1f, 1f, 0.95f);
-
-        Button button = buttonObject.AddComponent<Button>();
-        ColorBlock colors = button.colors;
-        colors.normalColor = Color.white;
-        colors.highlightedColor = new Color(1f, 0.95f, 0.82f, 1f);
-        colors.pressedColor = new Color(0.96f, 0.88f, 0.68f, 1f);
-        colors.selectedColor = colors.highlightedColor;
-        button.colors = colors;
-
-        TextMeshProUGUI labelText = CreateText(buttonObject.transform, "Label", label, 34, TextAnchor.MiddleCenter, FontStyle.Bold, new Color(0.36f, 0.18f, 0.05f, 1f));
-        SetAnchors(labelText.rectTransform, new Vector2(0.2f, 0.28f), new Vector2(0.8f, 0.72f));
-        return button;
+        Vector3 pos = GridToWorld(x, y);
+        CreateTile($"TreeCanopy_{x}_{y}", props, sprite, pos + new Vector3(0f, 0.35f, 0f), new Color(0.20f, 0.47f, 0.18f), 10, new Vector3(1.7f, 1.5f, 1f));
+        CreateTile($"TreeTrunk_{x}_{y}", props, sprite, pos + new Vector3(0f, -0.20f, 0f), new Color(0.48f, 0.28f, 0.10f), 9, new Vector3(0.42f, 0.70f, 1f));
+        CreateBoundary(walls, $"TreeWall_{x}_{y}", pos + new Vector3(0f, -0.20f, 0f), new Vector2(0.90f, 0.70f));
     }
 
-    private static GameObject CreateStyledPanel(string name, Transform parent, Sprite sprite, Color fillColor, Color shadowColor)
+    private static void CreateRock(Transform props, Sprite sprite, int x, int y)
     {
-        GameObject panel = CreatePanel(name, parent, sprite, fillColor);
-        Shadow shadow = panel.AddComponent<Shadow>();
-        shadow.effectColor = shadowColor;
-        shadow.effectDistance = new Vector2(6f, -6f);
+        CreateTile($"Rock_{x}_{y}", props, sprite, GridToWorld(x, y), new Color(0.52f, 0.54f, 0.56f), 8, new Vector3(0.72f, 0.58f, 1f));
+    }
+
+    private static GameObject CreatePanel(Transform parent, string name, Color color, float xMin, float yMin, float xMax, float yMax)
+    {
+        GameObject panel = new GameObject(name, typeof(RectTransform), typeof(Image));
+        panel.transform.SetParent(parent, false);
+        panel.GetComponent<Image>().color = color;
+        Anchor(panel.GetComponent<RectTransform>(), xMin, yMin, xMax, yMax);
         return panel;
     }
 
-    private static GameObject CreatePanel(string name, Transform parent, Sprite sprite, Color color)
+    private static TextMeshProUGUI CreateText(Transform parent, string name, string textValue, float fontSize, TextAlignmentOptions alignment, float xMin, float yMin, float xMax, float yMax)
     {
-        GameObject panel = CreateUIObject(name, parent);
-        Image image = panel.AddComponent<Image>();
-        image.sprite = sprite;
-        image.type = Image.Type.Simple;
-        image.color = color;
-        return panel;
-    }
-
-    private static TextMeshProUGUI CreateText(Transform parent, string name, string value, int fontSize, TextAnchor alignment, FontStyle style, Color color)
-    {
-        GameObject textObject = CreateUIObject(name, parent);
-        TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
-        text.text = value;
-        text.font = LoadDefaultTmpFont();
+        GameObject textObject = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(parent, false);
+        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
+        text.text = textValue;
         text.fontSize = fontSize;
-        text.fontStyle = ConvertFontStyle(style);
-        text.alignment = ConvertAlignment(alignment);
-        text.color = color;
+        text.alignment = alignment;
+        text.color = new Color(1f, 0.95f, 0.84f);
         text.textWrappingMode = TextWrappingModes.Normal;
-        text.outlineWidth = 0.18f;
-        text.outlineColor = new Color(0.18f, 0.09f, 0.03f, 1f);
-        text.margin = new Vector4(8f, 6f, 8f, 6f);
+        Anchor(textObject.GetComponent<RectTransform>(), xMin, yMin, xMax, yMax);
         return text;
     }
 
-    private static Sprite EnsureSquareSprite()
+    private static Button CreateButton(Transform parent, string name, string label, float xMin, float yMin, float xMax, float yMax)
     {
-        Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(SquareTexturePath);
+        GameObject buttonObject = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+        buttonObject.transform.SetParent(parent, false);
+        buttonObject.GetComponent<Image>().color = new Color(0.54f, 0.30f, 0.10f, 0.96f);
+        Anchor(buttonObject.GetComponent<RectTransform>(), xMin, yMin, xMax, yMax);
 
-        if (sprite != null)
+        TextMeshProUGUI labelText = CreateText(buttonObject.transform, "Label", label, 24, TextAlignmentOptions.Center, 0f, 0f, 1f, 1f);
+        labelText.margin = new Vector4(6f, 6f, 6f, 6f);
+        return buttonObject.GetComponent<Button>();
+    }
+
+    private static void Anchor(RectTransform rect, float xMin, float yMin, float xMax, float yMax)
+    {
+        rect.anchorMin = new Vector2(xMin, yMin);
+        rect.anchorMax = new Vector2(xMax, yMax);
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+    }
+
+    private static void CreateBoundary(Transform parent, string name, Vector3 position, Vector2 size)
+    {
+        GameObject wall = new GameObject(name);
+        wall.transform.SetParent(parent, false);
+        wall.transform.localPosition = position;
+        wall.AddComponent<BoxCollider2D>().size = size;
+    }
+
+    private static Vector3 GridToWorld(int x, int y)
+    {
+        return new Vector3(x - MapWidth * 0.5f + 0.5f, y - MapHeight * 0.5f + 0.5f, 0f);
+    }
+
+    private static void SetObject(Object target, string propertyName, Object value)
+    {
+        SerializedObject serialized = new SerializedObject(target);
+        SerializedProperty property = serialized.FindProperty(propertyName);
+        if (property != null)
         {
-            return sprite;
-        }
-
-        string directory = Path.GetDirectoryName(SquareTexturePath);
-
-        if (!Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        Texture2D texture = new Texture2D(16, 16, TextureFormat.RGBA32, false);
-        Color[] pixels = new Color[16 * 16];
-
-        for (int i = 0; i < pixels.Length; i++)
-        {
-            pixels[i] = Color.white;
-        }
-
-        texture.SetPixels(pixels);
-        texture.Apply();
-        File.WriteAllBytes(SquareTexturePath, texture.EncodeToPNG());
-        Object.DestroyImmediate(texture);
-
-        AssetDatabase.ImportAsset(SquareTexturePath, ImportAssetOptions.ForceUpdate);
-
-        TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(SquareTexturePath);
-        importer.textureType = TextureImporterType.Sprite;
-        importer.spriteImportMode = SpriteImportMode.Single;
-        importer.mipmapEnabled = false;
-        importer.alphaIsTransparency = true;
-        importer.filterMode = FilterMode.Point;
-        importer.textureCompression = TextureImporterCompression.Uncompressed;
-        importer.SaveAndReimport();
-
-        return AssetDatabase.LoadAssetAtPath<Sprite>(SquareTexturePath);
-    }
-
-    private static Sprite LoadSpriteAsset(string assetPath, Sprite fallback)
-    {
-        Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-        return sprite != null ? sprite : fallback;
-    }
-
-    private static TMP_FontAsset LoadDefaultTmpFont()
-    {
-        TMP_FontAsset font = TMP_Settings.defaultFontAsset;
-
-        if (font == null)
-        {
-            font = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
-        }
-
-        return font;
-    }
-
-    private static FontStyles ConvertFontStyle(FontStyle style)
-    {
-        return style switch
-        {
-            FontStyle.Bold => FontStyles.Bold,
-            FontStyle.Italic => FontStyles.Italic,
-            FontStyle.BoldAndItalic => FontStyles.Bold | FontStyles.Italic,
-            _ => FontStyles.Normal
-        };
-    }
-
-    private static TextAlignmentOptions ConvertAlignment(TextAnchor alignment)
-    {
-        return alignment switch
-        {
-            TextAnchor.UpperLeft => TextAlignmentOptions.TopLeft,
-            TextAnchor.UpperCenter => TextAlignmentOptions.Top,
-            TextAnchor.UpperRight => TextAlignmentOptions.TopRight,
-            TextAnchor.MiddleLeft => TextAlignmentOptions.Left,
-            TextAnchor.MiddleCenter => TextAlignmentOptions.Center,
-            TextAnchor.MiddleRight => TextAlignmentOptions.Right,
-            TextAnchor.LowerLeft => TextAlignmentOptions.BottomLeft,
-            TextAnchor.LowerCenter => TextAlignmentOptions.Bottom,
-            TextAnchor.LowerRight => TextAlignmentOptions.BottomRight,
-            _ => TextAlignmentOptions.Left
-        };
-    }
-
-    private static DialogueData CreateDialogueAsset(string assetPath, string speakerName, (string text, bool showAsHistoricalFact)[] lines)
-    {
-        DialogueData asset = AssetDatabase.LoadAssetAtPath<DialogueData>(assetPath);
-
-        if (asset == null)
-        {
-            asset = ScriptableObject.CreateInstance<DialogueData>();
-            EnsureAssetFolder(assetPath);
-            AssetDatabase.CreateAsset(asset, assetPath);
-        }
-
-        SerializedObject serializedObject = new SerializedObject(asset);
-        serializedObject.FindProperty("speakerName").stringValue = speakerName;
-
-        SerializedProperty lineArray = serializedObject.FindProperty("lines");
-        lineArray.arraySize = lines.Length;
-
-        for (int i = 0; i < lines.Length; i++)
-        {
-            SerializedProperty element = lineArray.GetArrayElementAtIndex(i);
-            element.FindPropertyRelative("text").stringValue = lines[i].text;
-            element.FindPropertyRelative("showAsHistoricalFact").boolValue = lines[i].showAsHistoricalFact;
-        }
-
-        serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        EditorUtility.SetDirty(asset);
-        return asset;
-    }
-
-    private static QuestData CreateQuestAsset()
-    {
-        QuestData asset = AssetDatabase.LoadAssetAtPath<QuestData>(ElderQuestPath);
-
-        if (asset == null)
-        {
-            asset = ScriptableObject.CreateInstance<QuestData>();
-            EnsureAssetFolder(ElderQuestPath);
-            AssetDatabase.CreateAsset(asset, ElderQuestPath);
-        }
-
-        SerializedObject serializedObject = new SerializedObject(asset);
-        serializedObject.FindProperty("questId").stringValue = "meet_the_elder";
-        serializedObject.FindProperty("title").stringValue = "Visit the River Shrine";
-        serializedObject.FindProperty("description").stringValue = "Learn how places of worship and gathering were important in many pre-colonial communities.";
-        serializedObject.FindProperty("historicalFact").stringValue = "Barangays often centered daily life around leadership, cooperation, and shared traditions.";
-
-        SerializedProperty objectives = serializedObject.FindProperty("objectives");
-        objectives.arraySize = 1;
-        SerializedProperty objective = objectives.GetArrayElementAtIndex(0);
-        objective.FindPropertyRelative("objectiveId").stringValue = "visit_shrine";
-        objective.FindPropertyRelative("description").stringValue = "Walk to the shrine near the river.";
-        objective.FindPropertyRelative("objectiveType").enumValueIndex = (int)QuestObjectiveType.ReachLocation;
-        objective.FindPropertyRelative("targetId").stringValue = "river_shrine";
-        objective.FindPropertyRelative("requiredAmount").intValue = 1;
-
-        SerializedProperty rewards = serializedObject.FindProperty("rewards");
-        rewards.arraySize = 1;
-        SerializedProperty reward = rewards.GetArrayElementAtIndex(0);
-        reward.FindPropertyRelative("rewardItemId").stringValue = "barangay_token";
-        reward.FindPropertyRelative("rewardAmount").intValue = 1;
-        reward.FindPropertyRelative("scoreBonus").intValue = 25;
-        reward.FindPropertyRelative("unlockContentId").stringValue = "main_world_intro_complete";
-
-        serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        EditorUtility.SetDirty(asset);
-        return asset;
-    }
-
-    private static GameObject CreateWorldSprite(string name, Sprite sprite, Color color, Vector3 position, Vector3 scale, Transform parent, int sortingOrder = 0)
-    {
-        GameObject gameObject = new GameObject(name);
-        gameObject.transform.SetParent(parent, false);
-        gameObject.transform.position = position;
-        gameObject.transform.localScale = scale;
-
-        SpriteRenderer renderer = gameObject.AddComponent<SpriteRenderer>();
-        renderer.sprite = sprite;
-        renderer.color = color;
-        renderer.sortingOrder = sortingOrder;
-        return gameObject;
-    }
-
-    private static SpriteRenderer CreateCharacterShadow(Transform parent, Sprite shadowSprite, int sortingOrder, Vector3 localPosition, Vector3 localScale)
-    {
-        GameObject shadowObject = new GameObject("Shadow");
-        shadowObject.transform.SetParent(parent, false);
-        shadowObject.transform.localPosition = localPosition;
-        shadowObject.transform.localScale = localScale;
-
-        SpriteRenderer renderer = shadowObject.AddComponent<SpriteRenderer>();
-        renderer.sprite = shadowSprite;
-        renderer.sortingOrder = sortingOrder;
-        return renderer;
-    }
-
-    private static SpriteRenderer CreateCharacterSprite(Transform parent, Sprite preferredSprite, Sprite fallbackSprite, int sortingOrder, Vector3 localPosition, Vector3 localScale)
-    {
-        GameObject spriteObject = new GameObject("Visual");
-        spriteObject.transform.SetParent(parent, false);
-        spriteObject.transform.localPosition = localPosition;
-        spriteObject.transform.localScale = localScale;
-
-        SpriteRenderer renderer = spriteObject.AddComponent<SpriteRenderer>();
-        renderer.sprite = preferredSprite != null ? preferredSprite : fallbackSprite;
-        renderer.sortingOrder = sortingOrder;
-        return renderer;
-    }
-
-    private static GameObject CreateUIObject(string name, Transform parent)
-    {
-        GameObject gameObject = new GameObject(name, typeof(RectTransform));
-        gameObject.transform.SetParent(parent, false);
-        return gameObject;
-    }
-
-    private static void SetAnchors(RectTransform rectTransform, Vector2 min, Vector2 max)
-    {
-        rectTransform.anchorMin = min;
-        rectTransform.anchorMax = max;
-        rectTransform.offsetMin = Vector2.zero;
-        rectTransform.offsetMax = Vector2.zero;
-    }
-
-    private static void StretchToParent(RectTransform rectTransform)
-    {
-        SetAnchors(rectTransform, Vector2.zero, Vector2.one);
-    }
-
-    private static void EnsureAssetFolder(string assetPath)
-    {
-        string folderPath = Path.GetDirectoryName(assetPath)?.Replace("\\", "/");
-
-        if (string.IsNullOrEmpty(folderPath))
-        {
-            return;
-        }
-
-        string[] parts = folderPath.Split('/');
-        string currentPath = parts[0];
-
-        for (int i = 1; i < parts.Length; i++)
-        {
-            string nextPath = $"{currentPath}/{parts[i]}";
-
-            if (!AssetDatabase.IsValidFolder(nextPath))
-            {
-                AssetDatabase.CreateFolder(currentPath, parts[i]);
-            }
-
-            currentPath = nextPath;
+            property.objectReferenceValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 
-    private static void EnsureSceneInBuildSettings(string scenePath)
+    private static void SetString(Object target, string propertyName, string value)
+    {
+        SerializedObject serialized = new SerializedObject(target);
+        SerializedProperty property = serialized.FindProperty(propertyName);
+        if (property != null)
+        {
+            property.stringValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+    }
+
+    private static void SetFloat(Object target, string propertyName, float value)
+    {
+        SerializedObject serialized = new SerializedObject(target);
+        SerializedProperty property = serialized.FindProperty(propertyName);
+        if (property != null)
+        {
+            property.floatValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+    }
+
+    private static void SetInt(Object target, string propertyName, int value)
+    {
+        SerializedObject serialized = new SerializedObject(target);
+        SerializedProperty property = serialized.FindProperty(propertyName);
+        if (property != null)
+        {
+            property.intValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+    }
+
+    private static void SetEnum(Object target, string propertyName, System.Enum value)
+    {
+        SerializedObject serialized = new SerializedObject(target);
+        SerializedProperty property = serialized.FindProperty(propertyName);
+        if (property != null)
+        {
+            property.enumValueIndex = System.Convert.ToInt32(value);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+    }
+
+    private static void AddSceneToBuildSettings(string scenePath)
     {
         if (!File.Exists(scenePath))
         {
             return;
         }
 
-        EditorBuildSettingsScene[] existingScenes = EditorBuildSettings.scenes;
+        EditorBuildSettingsScene[] existing = EditorBuildSettings.scenes;
 
-        foreach (EditorBuildSettingsScene existingScene in existingScenes)
+        foreach (EditorBuildSettingsScene scene in existing)
         {
-            if (existingScene.path == scenePath)
+            if (scene.path == scenePath)
             {
                 return;
             }
         }
 
-        EditorBuildSettingsScene[] updatedScenes = new EditorBuildSettingsScene[existingScenes.Length + 1];
-
-        for (int i = 0; i < existingScenes.Length; i++)
+        var updated = new EditorBuildSettingsScene[existing.Length + 1];
+        for (int i = 0; i < existing.Length; i++)
         {
-            updatedScenes[i] = existingScenes[i];
+            updated[i] = existing[i];
         }
 
-        updatedScenes[existingScenes.Length] = new EditorBuildSettingsScene(scenePath, true);
-        EditorBuildSettings.scenes = updatedScenes;
-    }
-
-    private static void AssignPrivateField(Object target, string fieldName, Object value)
-    {
-        SerializedObject serializedObject = new SerializedObject(target);
-        SerializedProperty property = serializedObject.FindProperty(fieldName);
-
-        if (property != null)
-        {
-            property.objectReferenceValue = value;
-            serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        }
-    }
-
-    private static void AssignPrivateField(Object target, string fieldName, string value)
-    {
-        SerializedObject serializedObject = new SerializedObject(target);
-        SerializedProperty property = serializedObject.FindProperty(fieldName);
-
-        if (property != null)
-        {
-            property.stringValue = value;
-            serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        }
-    }
-
-    private static void AssignPrivateField(Object target, string fieldName, int value)
-    {
-        SerializedObject serializedObject = new SerializedObject(target);
-        SerializedProperty property = serializedObject.FindProperty(fieldName);
-
-        if (property != null)
-        {
-            property.intValue = value;
-            serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        }
-    }
-
-    private static void AssignPrivateField(Object target, string fieldName, float value)
-    {
-        SerializedObject serializedObject = new SerializedObject(target);
-        SerializedProperty property = serializedObject.FindProperty(fieldName);
-
-        if (property != null)
-        {
-            property.floatValue = value;
-            serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        }
-    }
-
-    private static void AssignPrivateField(Object target, string fieldName, QuestObjectiveType value)
-    {
-        SerializedObject serializedObject = new SerializedObject(target);
-        SerializedProperty property = serializedObject.FindProperty(fieldName);
-
-        if (property != null)
-        {
-            property.enumValueIndex = (int)value;
-            serializedObject.ApplyModifiedPropertiesWithoutUndo();
-        }
+        updated[existing.Length] = new EditorBuildSettingsScene(scenePath, true);
+        EditorBuildSettings.scenes = updated;
     }
 }
 #endif

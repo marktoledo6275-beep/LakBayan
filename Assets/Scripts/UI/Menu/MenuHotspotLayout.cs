@@ -14,28 +14,22 @@ public class MenuHotspotLayout : MonoBehaviour
     [SerializeField] private RectTransform artworkRect;
 
     [Header("Tap Zones")]
-    [SerializeField] private HotspotBinding startGame = new HotspotBinding
+    [SerializeField] private HotspotBinding newGame = new HotspotBinding
     {
-        label = "StartGame",
+        label = "NewGame",
         normalizedRect = new Rect(0.302f, 0.627f, 0.392f, 0.098f)
     };
 
-    [SerializeField] private HotspotBinding instructions = new HotspotBinding
+    [SerializeField] private HotspotBinding loadGame = new HotspotBinding
     {
-        label = "Instructions",
+        label = "LoadGame",
         normalizedRect = new Rect(0.299f, 0.489f, 0.398f, 0.096f)
     };
 
-    [SerializeField] private HotspotBinding about = new HotspotBinding
+    [SerializeField] private HotspotBinding settings = new HotspotBinding
     {
-        label = "About",
+        label = "Settings",
         normalizedRect = new Rect(0.300f, 0.354f, 0.395f, 0.095f)
-    };
-
-    [SerializeField] private HotspotBinding exit = new HotspotBinding
-    {
-        label = "Exit",
-        normalizedRect = new Rect(0.298f, 0.211f, 0.397f, 0.098f)
     };
 
     private void Reset()
@@ -61,18 +55,16 @@ public class MenuHotspotLayout : MonoBehaviour
             artworkRect = transform as RectTransform;
         }
 
-        ApplyBinding(startGame);
-        ApplyBinding(instructions);
-        ApplyBinding(about);
-        ApplyBinding(exit);
+        ApplyBinding(newGame);
+        ApplyBinding(loadGame);
+        ApplyBinding(settings);
     }
 
-    public void AssignTargets(RectTransform startButton, RectTransform instructionsButton, RectTransform aboutButton, RectTransform exitButton)
+    public void AssignTargets(RectTransform newGameButton, RectTransform loadGameButton, RectTransform settingsButton)
     {
-        startGame.target = startButton;
-        instructions.target = instructionsButton;
-        about.target = aboutButton;
-        exit.target = exitButton;
+        newGame.target = newGameButton;
+        loadGame.target = loadGameButton;
+        settings.target = settingsButton;
         RefreshLayout();
     }
 

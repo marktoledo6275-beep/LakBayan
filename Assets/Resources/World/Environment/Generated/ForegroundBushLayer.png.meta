@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: dfdf55bfeeae59844abf1e784d6e8d45
+guid: aaa8c79b6589ea04592c28023755d1e0
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1767033301236671846
-    second: RiverShrine_0
+      213: 5745348228606631742
+    second: ForegroundBushLayer_0
+  - first:
+      213: -1034040664667358778
+    second: ForegroundBushLayer_1
+  - first:
+      213: 1298590079292571612
+    second: ForegroundBushLayer_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +119,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: RiverShrine_0
+      name: ForegroundBushLayer_0
       rect:
         serializedVersion: 2
-        x: 11
-        y: 13
-        width: 106
-        height: 140
+        x: 0
+        y: 0
+        width: 255
+        height: 73
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +134,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6656f72ec63c58810800000000000000
-      internalID: 1767033301236671846
+      spriteID: e3f940516c39bbf40800000000000000
+      internalID: 5745348228606631742
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ForegroundBushLayer_1
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 0
+        width: 11
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c9713b7e7956a1f0800000000000000
+      internalID: -1034040664667358778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ForegroundBushLayer_2
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 0
+        width: 11
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdf74110cc4850210800000000000000
+      internalID: 1298590079292571612
       vertices: []
       indices: 
       edges: []
@@ -147,8 +197,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      RiverShrine_0: 1767033301236671846
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

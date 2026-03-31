@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: dfdf55bfeeae59844abf1e784d6e8d45
+guid: 2926578721dc08543a77d0f21006236e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1767033301236671846
-    second: RiverShrine_0
+      213: -8122918587070247954
+    second: NipaHutLayer_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: RiverShrine_0
+      name: NipaHutLayer_0
       rect:
         serializedVersion: 2
-        x: 11
-        y: 13
-        width: 106
-        height: 140
+        x: 37
+        y: 0
+        width: 85
+        height: 95
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6656f72ec63c58810800000000000000
-      internalID: 1767033301236671846
+      spriteID: eeb82460598954f80800000000000000
+      internalID: -8122918587070247954
       vertices: []
       indices: 
       edges: []
@@ -147,8 +147,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      RiverShrine_0: 1767033301236671846
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   speakerName: Village Elder
   lines:
-  - text: Before long ago, each barangay had places of worship and gathering near
-      rivers and forests.
+  - text: Cross the bridge and visit the river shrine to the east.
+    showAsHistoricalFact: 0
+  - text: Many pre-colonial communities settled near rivers because waterways supported
+      fishing, farming, and trade.
     showAsHistoricalFact: 1
-  - text: Walk to the shrine by the river, then return to me so I know you understand
-      our village.
+  - text: Return to me after you reach it.
     showAsHistoricalFact: 0

@@ -1,0 +1,73 @@
+﻿# Lakbayan Tileset Index
+
+- Tile size: 32x32 pixels
+- Sheet size: 256x256 pixels
+- Layout: 8 columns x 8 rows
+- Import in Unity as Sprite (2D and UI), Filter Mode = Point, Compression = None, Pixels Per Unit = 32
+
+## Tile Order
+
+- [0] row 0, col 0: grass
+- [1] row 0, col 1: grass_alt
+- [2] row 0, col 2: grass_flower_yellow
+- [3] row 0, col 3: grass_flower_pink
+- [4] row 0, col 4: grass_mushroom
+- [5] row 0, col 5: bush_small
+- [6] row 0, col 6: rock_small
+- [7] row 0, col 7: rock_large
+- [8] row 1, col 0: dirt
+- [9] row 1, col 1: path_h
+- [10] row 1, col 2: path_v
+- [11] row 1, col 3: path_ne
+- [12] row 1, col 4: path_nw
+- [13] row 1, col 5: path_se
+- [14] row 1, col 6: path_sw
+- [15] row 1, col 7: path_cross
+- [16] row 2, col 0: path_t_n
+- [17] row 2, col 1: path_t_s
+- [18] row 2, col 2: path_t_e
+- [19] row 2, col 3: path_t_w
+- [20] row 2, col 4: path_end_n
+- [21] row 2, col 5: path_end_s
+- [22] row 2, col 6: path_end_e
+- [23] row 2, col 7: path_end_w
+- [24] row 3, col 0: water_center
+- [25] row 3, col 1: water_shore_n
+- [26] row 3, col 2: water_shore_s
+- [27] row 3, col 3: water_shore_w
+- [28] row 3, col 4: water_shore_e
+- [29] row 3, col 5: water_corner_nw
+- [30] row 3, col 6: water_corner_ne
+- [31] row 3, col 7: water_corner_sw
+- [32] row 4, col 0: water_corner_se
+- [33] row 4, col 1: water_inner_nw
+- [34] row 4, col 2: water_inner_ne
+- [35] row 4, col 3: water_inner_sw
+- [36] row 4, col 4: water_inner_se
+- [37] row 4, col 5: bridge_h_left
+- [38] row 4, col 6: bridge_h_mid
+- [39] row 4, col 7: bridge_h_right
+- [40] row 5, col 0: cliff_top
+- [41] row 5, col 1: cliff_face
+- [42] row 5, col 2: cliff_left
+- [43] row 5, col 3: cliff_right
+- [44] row 5, col 4: cliff_corner_nw
+- [45] row 5, col 5: cliff_corner_ne
+- [46] row 5, col 6: cliff_corner_sw
+- [47] row 5, col 7: cliff_corner_se
+- [48] row 6, col 0: tree_tl
+- [49] row 6, col 1: tree_tr
+- [50] row 6, col 2: tree_bl
+- [51] row 6, col 3: tree_br
+- [52] row 6, col 4: bush_round
+- [53] row 6, col 5: flower_blue
+- [54] row 6, col 6: flower_red
+- [55] row 6, col 7: mushroom_cluster
+- [56] row 7, col 0: grass_clover
+- [57] row 7, col 1: dirt_pebbles
+- [58] row 7, col 2: bridge_v_top
+- [59] row 7, col 3: bridge_v_mid
+- [60] row 7, col 4: bridge_v_bottom
+- [61] row 7, col 5: rock_mossy
+- [62] row 7, col 6: flower_white
+- [63] row 7, col 7: sapling

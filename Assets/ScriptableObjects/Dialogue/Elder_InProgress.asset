@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   speakerName: Village Elder
   lines:
-  - text: The shrine stands near the riverbank. Observe it carefully, then come back.
+  - text: Keep following the path across the bridge. The shrine is waiting near the
+      riverbank.
     showAsHistoricalFact: 0

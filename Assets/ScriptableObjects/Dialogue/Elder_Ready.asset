@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   speakerName: Village Elder
   lines:
-  - text: Well done. You found the shrine and learned an important part of barangay
-      life.
+  - text: Excellent. You found the shrine and finished your first lesson.
     showAsHistoricalFact: 0
-  - text: Our people honor community, nature, and leadership together.
+  - text: Rivers connected barangays and helped people travel and exchange goods
+      long before modern roads.
     showAsHistoricalFact: 1

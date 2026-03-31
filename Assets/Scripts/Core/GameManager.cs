@@ -45,6 +45,7 @@ public class GameManager : MonoBehaviour
     public int MiniGameScore => miniGameScore;
     public int TotalScore => historyScore + quizScore + miniGameScore;
     public string LastWorldSceneName => string.IsNullOrWhiteSpace(lastWorldSceneName) ? startingWorldScene : lastWorldSceneName;
+    public bool HasSavedProgress => PlayerPrefs.HasKey(SaveKey);
 
     private void Awake()
     {

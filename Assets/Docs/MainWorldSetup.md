@@ -8,6 +8,7 @@ The starter world builder creates a first playable `MainWorld` scene with:
 - camera follow
 - a village elder NPC
 - a simple shrine objective
+- a layered forest environment with a nipa hut
 - dialogue UI
 - quest HUD
 - mobile joystick
@@ -23,6 +24,7 @@ The starter world builder creates a first playable `MainWorld` scene with:
    - dialogue assets in `Assets/ScriptableObjects/Dialogue`
    - a quest asset in `Assets/ScriptableObjects/Quests`
    - `Assets/Art/Generated/WhiteSquare.png`
+   - generated environment sprites in `Assets/Resources/World/Environment/Generated`
 
 ## How To Test From The Menu
 

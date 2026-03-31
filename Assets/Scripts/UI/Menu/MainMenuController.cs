@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,8 +12,8 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private string worldSceneName = "MainWorld";
 
     [Header("Panels")]
-    [SerializeField] private GameObject instructionsPanel;
-    [SerializeField] private GameObject aboutPanel;
+    [SerializeField] private GameObject noSavePanel;
+    [SerializeField] private GameObject settingsPanel;
 
     [Header("Guide Character")]
     [SerializeField] private RectTransform menuArtwork;
@@ -57,6 +58,54 @@ public class MainMenuController : MonoBehaviour
 
     public void StartGame()
     {
+        StartNewGame();
+    }
+
+    public void StartNewGame()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetProgress();
+        }
+
+        LoadWorldScene();
+    }
+
+    public void LoadGame()
+    {
+        if (GameManager.Instance != null && !GameManager.Instance.HasSavedProgress)
+        {
+            OpenNoSavePanel();
+            return;
+        }
+
+        LoadWorldScene();
+    }
+
+    public void OpenInstructions()
+    {
+        OpenSettings();
+    }
+
+    public void OpenAbout()
+    {
+        OpenSettings();
+    }
+
+    public void OpenNoSavePanel()
+    {
+        SetPanelState(noSavePanel, true);
+        SetPanelState(settingsPanel, false);
+    }
+
+    public void OpenSettings()
+    {
+        SetPanelState(settingsPanel, true);
+        SetPanelState(noSavePanel, false);
+    }
+
+    private void LoadWorldScene()
+    {
         if (SceneController.Instance != null)
         {
             SceneController.Instance.LoadWorldScene(worldSceneName);
@@ -66,22 +115,10 @@ public class MainMenuController : MonoBehaviour
         SceneManager.LoadScene(worldSceneName);
     }
 
-    public void OpenInstructions()
-    {
-        SetPanelState(instructionsPanel, true);
-        SetPanelState(aboutPanel, false);
-    }
-
-    public void OpenAbout()
-    {
-        SetPanelState(aboutPanel, true);
-        SetPanelState(instructionsPanel, false);
-    }
-
     public void CloseAllPanels()
     {
-        SetPanelState(instructionsPanel, false);
-        SetPanelState(aboutPanel, false);
+        SetPanelState(noSavePanel, false);
+        SetPanelState(settingsPanel, false);
     }
 
     public void ExitGame()
@@ -95,8 +132,8 @@ public class MainMenuController : MonoBehaviour
 
     private bool IsAnyPanelOpen()
     {
-        return (instructionsPanel != null && instructionsPanel.activeSelf) ||
-               (aboutPanel != null && aboutPanel.activeSelf);
+        return (noSavePanel != null && noSavePanel.activeSelf) ||
+               (settingsPanel != null && settingsPanel.activeSelf);
     }
 
     private void SetPanelState(GameObject panel, bool isOpen)
@@ -178,13 +215,13 @@ public class MainMenuController : MonoBehaviour
             colors.disabledColor = new Color(1f, 1f, 1f, 0.05f);
             button.colors = colors;
 
-            if (instructionsPanel != null)
+            if (settingsPanel != null)
             {
-                button.onClick.AddListener(OpenInstructions);
+                button.onClick.AddListener(OpenSettings);
             }
             else
             {
-                button.onClick.AddListener(StartGame);
+                button.onClick.AddListener(StartNewGame);
             }
         }
 
@@ -232,5 +269,189 @@ public class MainMenuController : MonoBehaviour
         outline.effectColor = new Color(0.12f, 0.07f, 0.04f, 0.45f);
         outline.effectDistance = new Vector2(3f, -3f);
         return spriteRect;
+    }
+}
+
+public class MenuAudioSettingsController : MonoBehaviour
+{
+    private const string MusicVolumeKey = "lakbayan_music_volume";
+    private const string SfxVolumeKey = "lakbayan_sfx_volume";
+    private const float MinimumLinearVolume = 0.0001f;
+    private const float MinimumDbVolume = -80f;
+    private const float MaximumDbVolume = 0f;
+
+    [Header("UI")]
+    [SerializeField] private Slider musicSlider;
+    [SerializeField] private Slider soundEffectsSlider;
+    [SerializeField] private Text musicValueText;
+    [SerializeField] private Text soundEffectsValueText;
+    [SerializeField] private Text statusText;
+
+    [Header("Audio")]
+    [SerializeField] private AudioMixer audioMixer;
+    [SerializeField] private string musicVolumeParameter = "MusicVolume";
+    [SerializeField] private string soundEffectsVolumeParameter = "SfxVolume";
+    [SerializeField] private float defaultMusicVolume = 0.8f;
+    [SerializeField] private float defaultSoundEffectsVolume = 0.85f;
+
+    private bool isInitialized;
+
+    private void Awake()
+    {
+        ConfigureSlider(musicSlider);
+        ConfigureSlider(soundEffectsSlider);
+    }
+
+    private void OnEnable()
+    {
+        InitializeIfNeeded();
+        RefreshFromSavedValues();
+    }
+
+    private void OnDisable()
+    {
+        UnregisterListeners();
+    }
+
+    private void ConfigureSlider(Slider slider)
+    {
+        if (slider == null)
+        {
+            return;
+        }
+
+        slider.minValue = 0f;
+        slider.maxValue = 1f;
+        slider.wholeNumbers = false;
+    }
+
+    private void InitializeIfNeeded()
+    {
+        if (isInitialized)
+        {
+            return;
+        }
+
+        RegisterListeners();
+        isInitialized = true;
+    }
+
+    private void RegisterListeners()
+    {
+        UnregisterListeners();
+
+        if (musicSlider != null)
+        {
+            musicSlider.onValueChanged.AddListener(HandleMusicChanged);
+        }
+
+        if (soundEffectsSlider != null)
+        {
+            soundEffectsSlider.onValueChanged.AddListener(HandleSoundEffectsChanged);
+        }
+    }
+
+    private void UnregisterListeners()
+    {
+        if (musicSlider != null)
+        {
+            musicSlider.onValueChanged.RemoveListener(HandleMusicChanged);
+        }
+
+        if (soundEffectsSlider != null)
+        {
+            soundEffectsSlider.onValueChanged.RemoveListener(HandleSoundEffectsChanged);
+        }
+    }
+
+    private void RefreshFromSavedValues()
+    {
+        float musicVolume = PlayerPrefs.GetFloat(MusicVolumeKey, defaultMusicVolume);
+        float sfxVolume = PlayerPrefs.GetFloat(SfxVolumeKey, defaultSoundEffectsVolume);
+
+        if (musicSlider != null)
+        {
+            musicSlider.SetValueWithoutNotify(musicVolume);
+        }
+
+        if (soundEffectsSlider != null)
+        {
+            soundEffectsSlider.SetValueWithoutNotify(sfxVolume);
+        }
+
+        ApplyMusicVolume(musicVolume, saveValue: false);
+        ApplySoundEffectsVolume(sfxVolume, saveValue: false);
+        UpdateStatusText();
+    }
+
+    private void HandleMusicChanged(float value)
+    {
+        ApplyMusicVolume(value, saveValue: true);
+    }
+
+    private void HandleSoundEffectsChanged(float value)
+    {
+        ApplySoundEffectsVolume(value, saveValue: true);
+    }
+
+    private void ApplyMusicVolume(float value, bool saveValue)
+    {
+        ApplyVolume(musicVolumeParameter, value);
+        UpdateValueText(musicValueText, value);
+
+        if (saveValue)
+        {
+            PlayerPrefs.SetFloat(MusicVolumeKey, value);
+            PlayerPrefs.Save();
+        }
+    }
+
+    private void ApplySoundEffectsVolume(float value, bool saveValue)
+    {
+        ApplyVolume(soundEffectsVolumeParameter, value);
+        UpdateValueText(soundEffectsValueText, value);
+
+        if (saveValue)
+        {
+            PlayerPrefs.SetFloat(SfxVolumeKey, value);
+            PlayerPrefs.Save();
+        }
+    }
+
+    private void ApplyVolume(string parameterName, float linearVolume)
+    {
+        if (audioMixer == null || string.IsNullOrWhiteSpace(parameterName))
+        {
+            return;
+        }
+
+        float safeLinearVolume = Mathf.Clamp(linearVolume, 0f, 1f);
+        float dbVolume = safeLinearVolume <= MinimumLinearVolume
+            ? MinimumDbVolume
+            : Mathf.Clamp(Mathf.Log10(safeLinearVolume) * 20f, MinimumDbVolume, MaximumDbVolume);
+
+        audioMixer.SetFloat(parameterName, dbVolume);
+    }
+
+    private void UpdateValueText(Text target, float value)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        target.text = $"{Mathf.RoundToInt(Mathf.Clamp01(value) * 100f)}%";
+    }
+
+    private void UpdateStatusText()
+    {
+        if (statusText == null)
+        {
+            return;
+        }
+
+        statusText.text = audioMixer == null
+            ? "Assign an AudioMixer in the inspector to route Music and SFX groups."
+            : "Audio updates live and is saved automatically.";
     }
 }

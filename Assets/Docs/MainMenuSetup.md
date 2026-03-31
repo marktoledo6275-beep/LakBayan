@@ -29,7 +29,6 @@
   - Start Game
   - Instructions
   - About
-  - Exit
 - instructions panel
 - about panel
 - mobile-friendly canvas scaling

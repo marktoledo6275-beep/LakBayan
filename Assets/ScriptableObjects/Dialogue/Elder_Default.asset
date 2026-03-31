@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   speakerName: Village Elder
   lines:
-  - text: Welcome, young Lakbayan. Our barangay thrives because everyone helps each
-      other.
+  - text: Welcome to our barangay. We learn by exploring and listening to the stories
+      of our people.
     showAsHistoricalFact: 1
-  - text: If you are ready, I can guide you through your first lesson.
+  - text: Talk to me when you are ready for your first task.
     showAsHistoricalFact: 0

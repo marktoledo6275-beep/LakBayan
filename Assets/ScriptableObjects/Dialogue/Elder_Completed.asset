@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   speakerName: Village Elder
   lines:
-  - text: Continue exploring. More stories and games await in LAKBAYAN.
+  - text: You are ready for more villagers, more lessons, and traditional mini-games
+      next.
     showAsHistoricalFact: 0
